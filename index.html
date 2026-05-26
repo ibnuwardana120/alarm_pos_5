@@ -10,15 +10,27 @@
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; text-align: center; padding: 20px; margin: 0; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 60px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 30px; }
         h2 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
-        .sub { color: #7f8c8d; font-size: 13px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
-        .status-box { padding: 20px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-bottom: 15px; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
-        .status-on { background: #2ecc71; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); }
-        .status-off { background: #95a5a6; box-shadow: 0 4px 10px rgba(149, 165, 166, 0.3); }
-        .alarm-safe { background: #3498db; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
-        .alarm-triggered { background: #e74c3c; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4); animation: blink 1s infinite; }
-        .note { font-size: 12px; color: #95a5a6; margin-top: 25px; font-style: italic; }
+        .sub { color: #7f8c8d; font-size: 13px; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        .status-box { padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-bottom: 15px; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .status-on { background: #2ecc71; }
+        .status-off { background: #95a5a6; }
+        .alarm-safe { background: #3498db; }
+        .alarm-triggered { background: #e74c3c; animation: blink 1s infinite; }
+        
+        /* Style Tabel Log */
+        .log-section { max-width: 500px; margin: 20px auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 14px; text-align: left; }
+        th { background: #f8f9fa; color: #2c3e50; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
+        .bg-on { background: #2ecc71; } .bg-off { background: #7f8c8d; } .bg-trigger { background: #e74c3c; } .bg-reset { background: #e67e22; }
+        
+        /* Tombol Excel */
+        .btn-excel { width: 100%; background: #27ae60; color: white; padding: 12px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        .btn-excel:hover { background: #219653; }
+        
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
@@ -26,16 +38,29 @@
 
 <div class="container">
     <h2>MONITOR ALARM POS 5</h2>
-    <div class="sub">View-Only Cloud Monitoring System</div>
+    <div class="sub">Cloud Monitoring & Report Center</div>
 
     <div id="sysStatusBox" class="status-box status-off">🛡️ SISTEM: MENGHUBUNGKAN...</div>
     <div id="alarmStatusBox" class="status-box alarm-safe">✅ KONDISI: MENGHUBUNGKAN...</div>
+</div>
 
-    <div class="note">*Halaman ini hanya untuk memantau situasi. Kendali penuh ada di Pos 5.</div>
+<div class="log-section">
+    <h3 style="margin: 0; color: #2c3e50;">📋 Riwayat Aktivitas Pos 5</h3>
+    <button class="btn-excel" onclick="downloadExcel()">📥 DOWNLOAD DATA KE EXCEL</button>
+    
+    <table id="tableLog">
+        <thead>
+            <tr>
+                <th>Waktu Log</th>
+                <th>Status Kejadian</th>
+            </tr>
+        </thead>
+        <tbody id="logTableBody">
+            </tbody>
+    </table>
 </div>
 
 <script>
-    // Konfigurasi Web App Firebase milikmu
     const firebaseConfig = {
         apiKey: "AIzaSyBzwsnQox5fZ6qOrNQtrIOa0ftYMKdI-qs",
         authDomain: "alarm-pos-5.firebaseapp.com",
@@ -46,15 +71,13 @@
         appId: "1:127800464063:web:6c217f674e78c78b4aac0a"
     };
     
-    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Membaca data secara otomatis (Real-time) tanpa fitur menulis/kontrol
+    // 1. Ambil Status Real-Time Alat
     database.ref('status').on('value', (snapshot) => {
         const data = snapshot.val();
         if(data) {
-            // Perbarui Elemen Visual Status Sistem
             const sysBox = document.getElementById('sysStatusBox');
             if(data.sistemAktif) {
                 sysBox.innerHTML = "🛡️ ALARM POS 5: SIAGA (ON)";
@@ -64,10 +87,9 @@
                 sysBox.className = "status-box status-off";
             }
 
-            // Perbarui Elemen Visual Status Kondisi Sirine
             const alarmBox = document.getElementById('alarmStatusBox');
             if(data.alarmSedangBunyi) {
-                alarmBox.innerHTML = "⚠️ PERINGATAN! SIRINE POS 5 BERBUNYI";
+                alarmBox.innerHTML = "⚠️ PERINGATAN! SIRINE BERBUNYI";
                 alarmBox.className = "status-box alarm-triggered";
             } else {
                 alarmBox.innerHTML = "✅ SITUASI POS 5 AMAN";
@@ -75,6 +97,63 @@
             }
         }
     });
+
+    // Array penampung data sementara untuk keperluan export Excel
+    let dataLogArray = [];
+
+    // 2. Ambil Riwayat Log secara Real-Time dari Firebase Cloud
+    database.ref('riwayat_log').on('value', (snapshot) => {
+        const tbody = document.getElementById('logTableBody');
+        tbody.innerHTML = ""; // Bersihkan tabel lama
+        dataLogArray = [];    // Kosongkan array cadangan Excel
+
+        snapshot.forEach((childSnapshot) => {
+            const logData = childSnapshot.val();
+            let labelStatus = "";
+            let classBadge = "";
+
+            if (logData.status == 1)      { labelStatus = "SYSTEM ON"; classBadge = "bg-on"; }
+            else if (logData.status == 2) { labelStatus = "SYSTEM OFF"; classBadge = "bg-off"; }
+            else if (logData.status == 3) { labelStatus = "ALARM TRIGGER"; classBadge = "bg-trigger"; }
+            else if (logData.status == 4) { labelStatus = "RESET ALARM"; classBadge = "bg-reset"; }
+
+            // Simpan ke array Excel
+            dataLogArray.push({ waktu: logData.waktu, status: labelStatus });
+
+            // Masukkan baris baru ke tabel HTML di browser HP
+            let row = `<tr>
+                <td>${logData.waktu}</td>
+                <td><span class="badge ${classBadge}">${labelStatus}</span></td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    });
+
+    // 3. Fungsi Pembuat File Excel Otomatis (.CSV)
+    function downloadExcel() {
+        if (dataLogArray.length === 0) {
+            alert("Belum ada data log yang bisa diunduh!");
+            return;
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        // Header Kolom di Excel
+        csvContent += "Waktu Log,Status Kejadian\n"; 
+
+        // Isi baris data
+        dataLogArray.forEach((row) => {
+            csvContent += `${row.waktu},${row.status}\n`;
+        });
+
+        // Proses download file langsung di HP/Laptop
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Laporan_Log_Alarm_Pos5.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 </script>
 </body>
 </html>
