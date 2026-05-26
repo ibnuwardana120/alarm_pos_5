@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Cloud Alarm - Pos 5</title>
+    <title>Monitoring Alarm - Pos 5</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; text-align: center; padding: 20px; margin: 0; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 40px; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 60px; }
         h2 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
-        .sub { color: #7f8c8d; font-size: 14px; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
-        .status-box { padding: 18px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-bottom: 15px; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .sub { color: #7f8c8d; font-size: 13px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
+        .status-box { padding: 20px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-bottom: 15px; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .status-on { background: #2ecc71; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); }
         .status-off { background: #95a5a6; box-shadow: 0 4px 10px rgba(149, 165, 166, 0.3); }
         .alarm-safe { background: #3498db; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
         .alarm-triggered { background: #e74c3c; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4); animation: blink 1s infinite; }
-        button { width: 100%; padding: 15px; margin: 10px 0; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-        .btn-toggle { background: #2c3e50; color: white; }
-        .btn-reset { background: #e67e22; color: white; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:active { transform: translateY(1px); }
+        .note { font-size: 12px; color: #95a5a6; margin-top: 25px; font-style: italic; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
@@ -30,19 +26,16 @@
 
 <div class="container">
     <h2>MONITOR ALARM POS 5</h2>
-    <div class="sub">Cloud Monitoring System</div>
+    <div class="sub">View-Only Cloud Monitoring System</div>
 
     <div id="sysStatusBox" class="status-box status-off">🛡️ SISTEM: MENGHUBUNGKAN...</div>
     <div id="alarmStatusBox" class="status-box alarm-safe">✅ KONDISI: MENGHUBUNGKAN...</div>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-
-    <button class="btn-toggle" onclick="toggleSistem()">ON / OFF SISTEM</button>
-    <button class="btn-reset" onclick="resetAlarm()">RESET SIRINE</button>
+    <div class="note">*Halaman ini hanya untuk memantau situasi. Kendali penuh ada di Pos 5.</div>
 </div>
 
 <script>
-    // Konfigurasi Web App Firebase Jalur Akses Browser
+    // Konfigurasi Web App Firebase milikmu
     const firebaseConfig = {
         apiKey: "AIzaSyBzwsnQox5fZ6qOrNQtrIOa0ftYMKdI-qs",
         authDomain: "alarm-pos-5.firebaseapp.com",
@@ -53,53 +46,35 @@
         appId: "1:127800464063:web:6c217f674e78c78b4aac0a"
     };
     
-    // Inisialisasi Jalur Firebase
+    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let currentSistemAktif = false;
-
-    // Sinkronisasi data secara real-time dari Cloud Firebase ke Browser
+    // Membaca data secara otomatis (Real-time) tanpa fitur menulis/kontrol
     database.ref('status').on('value', (snapshot) => {
         const data = snapshot.val();
         if(data) {
-            currentSistemAktif = data.sistemAktif;
-            
             // Perbarui Elemen Visual Status Sistem
             const sysBox = document.getElementById('sysStatusBox');
             if(data.sistemAktif) {
-                sysBox.innerHTML = "🛡️ SISTEM AKTIF (SIAGA)";
+                sysBox.innerHTML = "🛡️ ALARM POS 5: SIAGA (ON)";
                 sysBox.className = "status-box status-on";
             } else {
-                sysBox.innerHTML = "📴 SISTEM MATI (OFF)";
+                sysBox.innerHTML = "📴 ALARM POS 5: NONAKTIF (OFF)";
                 sysBox.className = "status-box status-off";
             }
 
             // Perbarui Elemen Visual Status Kondisi Sirine
             const alarmBox = document.getElementById('alarmStatusBox');
             if(data.alarmSedangBunyi) {
-                alarmBox.innerHTML = "⚠️ ALARM TERPICU! SIRINE BUNYI";
+                alarmBox.innerHTML = "⚠️ PERINGATAN! SIRINE POS 5 BERBUNYI";
                 alarmBox.className = "status-box alarm-triggered";
             } else {
-                alarmBox.innerHTML = "✅ KONDISI POS 5 AMAN";
+                alarmBox.innerHTML = "✅ SITUASI POS 5 AMAN";
                 alarmBox.className = "status-box alarm-safe";
             }
         }
     });
-
-    // Aksi Tombol Toggle Mengubah Status Sistem di Database Cloud
-    function toggleSistem() {
-        database.ref('kontrol').update({
-            sistemAktif: !currentSistemAktif
-        });
-    }
-
-    // Aksi Tombol Reset Mengirimkan Trigger Interupsi ke Perangkat Keras
-    function resetAlarm() {
-        database.ref('kontrol').update({
-            resetAlarm: true
-        });
-    }
 </script>
 </body>
 </html>
